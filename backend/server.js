@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import express from "express";
 import { pool } from "./libs/database.js";
+import routes from "./routes/index.js";
 
 dotenv.config();
 
@@ -8,6 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
+app.use("/api", routes);
 
 // Hàm khởi tạo database
 async function initDB() {
