@@ -120,3 +120,61 @@ export const signinUser = async (req, res) => {
     res.status(500).json({ message: error.message, status: "failed" });
   }
 };
+
+/**
+ * Controller xử lý đăng nhập bằng mạng xã hội (Google, Github, etc.)
+ * Route: POST /api/auth/social-sign-in
+ * Tự động tạo user mới nếu chưa tồn tại (find-or-create)
+ */
+export const socialSignIn = async (req, res) => {
+  try {
+    // Lấy thông tin từ request body
+    const { name, email, provider, uid } = req.body;
+
+    // Kiểm tra các trường bắt buộc có được cung cấp không
+    if (!(email || provider || uid)) {
+      return res.status(400).json({
+        message: "Vui lòng cung cấp đầy đủ thông tin!",
+        status: "failed",
+      });
+    }
+
+    // Tìm user trong database theo email
+    const result = await pool.query({
+      text: `SELECT * FROM tbluser WHERE email = $1`,
+      values: [email],
+    });
+
+    let user = result.rows[0];
+
+    // Nếu user chưa tồn tại, tạo mới
+    if (!user) {
+      const newUserResult = await pool.query({
+        text: `INSERT INTO tbluser (firstname, email, provider) VALUES ($1, $2, $3) RETURNING *`,
+        values: [name || "User", email, provider],
+      });
+      user = newUserResult.rows[0];
+    }
+
+    // Tạo JWT token với user ID để xác thực các request sau này
+    const token = createJWT(user.id);
+
+    // Xóa password khỏi response để không gửi về client
+    user.password = undefined;
+
+    // Trả về response thành công với token và thông tin user
+    res.status(200).json({
+      message:
+        user.id === result.rows[0]?.id
+          ? "Đăng nhập thành công"
+          : "Tạo tài khoản thành công",
+      status: "success",
+      token,
+      user,
+    });
+  } catch (error) {
+    // Xử lý lỗi nếu có bất kỳ exception nào xảy ra
+    console.log(error);
+    res.status(500).json({ message: error.message, status: "failed" });
+  }
+};

@@ -1,3 +1,4 @@
+import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import { pool } from "./libs/database.js";
@@ -7,6 +8,16 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Enable CORS for frontend
+app.use(
+  cors({
+    allowedHeaders: "Content-Type,Authorization",
+    credentials: true,
+    methods: "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+    origin: "http://localhost:5173",
+  }),
+);
 
 app.use(express.json());
 app.use("/api", routes);

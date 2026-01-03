@@ -1,0 +1,124 @@
+import {
+  GithubAuthProvider,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "firebase/auth";
+import { useEffect, useState } from "react";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { FcGoogle } from "react-icons/fc";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import api from "../libs/api";
+import { auth } from "../libs/firebaseConfig";
+import useStore from "../store";
+import { Button } from "./ui/button";
+
+/**
+ * Component xử lý đăng nhập bằng các nhà cung cấp xác thực (Google, Github)
+ * @param {boolean} isLoading - Trạng thái loading
+ * @param {Function} setLoading - Hàm cập nhật trạng thái loading
+ */
+const SocialAuth = ({ isLoading, setLoading }) => {
+  const [user] = useAuthState(auth); // Lấy thông tin user từ Firebase
+  const [selectedProvider, setSelectedProvider] = useState("google"); // Provider được chọn
+  const { setCredentials } = useStore((state) => state);
+  const navigate = useNavigate();
+
+  /**
+   * Đăng nhập bằng Google
+   */
+  const signInWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    setSelectedProvider("google");
+    try {
+      await signInWithPopup(auth, provider);
+      // Xử lý tiếp được thực hiện trong useEffect khi user thay đổi
+    } catch (error) {
+      console.error("Lỗi khi đăng nhập với Google", error);
+    }
+  };
+
+  /**
+   * Đăng nhập bằng Github (chưa sử dụng)
+   */
+  const _signInWithGithub = async () => {
+    const provider = new GithubAuthProvider();
+    setSelectedProvider("github");
+    try {
+      const res = await signInWithPopup(auth, provider);
+      console.log(res);
+    } catch (error) {
+      console.error("Lỗi khi đăng nhập với GitHub", error);
+    }
+  };
+
+  // Lắng nghe sự thay đổi của user và lưu vào database
+  useEffect(() => {
+    /**
+     * Lưu thông tin user vào database sau khi đăng nhập thành công
+     */
+    const saveUserToDB = async () => {
+      try {
+        // Chuẩn bị dữ liệu user để gửi lên server
+        const userData = {
+          email: user.email,
+          name: user.displayName,
+          provider: selectedProvider,
+          uid: user.uid,
+        };
+        setLoading(true);
+        // Gửi request đăng nhập/đăng ký đến backend (social sign-in)
+        const { data: res } = await api.post("/auth/social-sign-in", userData);
+        console.log(res);
+        if (res?.user) {
+          toast.success(res?.message);
+          // Lưu thông tin user và token vào localStorage
+          const userInfo = { ...res?.user, token: res?.token };
+          localStorage.setItem("user", JSON.stringify(userInfo));
+          setCredentials(userInfo);
+          // Chuyển hướng về trang chủ sau 1 giây
+          setTimeout(() => {
+            setLoading(false);
+            navigate("/");
+          }, 1000);
+        }
+      } catch (error) {
+        console.error("Đã xảy ra lỗi:", error);
+        toast.error(error?.response?.data?.message || error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    // Chỉ lưu user khi đã đăng nhập thành công
+    if (user) {
+      saveUserToDB();
+    }
+  }, [
+    user,
+    user?.uid,
+    user?.displayName,
+    user?.email,
+    selectedProvider,
+    setLoading,
+    setCredentials,
+    navigate,
+  ]);
+
+  return (
+    <div>
+      {/* Nút đăng nhập với Google */}
+      <Button
+        className="dark:bg-transparent dark:border-gray-800 w-full font-normal dark:text-gray-400 text-sm"
+        disabled={isLoading}
+        onClick={signInWithGoogle}
+        type="button"
+        variant="outline"
+      >
+        <FcGoogle className="mr-2" size={20} />
+        Đăng nhập với Google
+      </Button>
+    </div>
+  );
+};
+
+export default SocialAuth;
