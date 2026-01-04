@@ -17,7 +17,7 @@ const RootLayout = () => {
   // Thiết lập auth token cho các API request
   setAuthToken(user?.token || "");
 
-  return user ? (
+  return !user ? (
     // Nếu chưa đăng nhập, chuyển hướng đến trang sign-in
     <Navigate replace={true} to="sign-in" />
   ) : (

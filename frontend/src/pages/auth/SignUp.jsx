@@ -29,7 +29,7 @@ const RegisterSchema = z.object({
     .min(3, "Tên phải có ít nhất 3 ký tự"),
   password: z
     .string({ required_error: "Mật khẩu là bắt buộc" })
-    .min(1, "Mật khẩu là bắt buộc"),
+    .min(8, "Mật khẩu phải có ít nhất 8 ký tự"),
 });
 
 /**
@@ -50,7 +50,7 @@ const SignUp = () => {
 
   // Nếu đã đăng nhập, chuyển hướng về trang chủ
   useEffect(() => {
-    user && navigate("/");
+    user && navigate("/overview");
   }, [user, navigate]);
 
   /**

@@ -3,7 +3,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from "firebase/auth";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
@@ -23,6 +23,7 @@ const SocialAuth = ({ isLoading, setLoading }) => {
   const [selectedProvider, setSelectedProvider] = useState("google"); // Provider được chọn
   const { setCredentials } = useStore((state) => state);
   const navigate = useNavigate();
+  const hasProcessedUser = useRef(false); // Theo dõi xem đã xử lý user chưa
 
   /**
    * Đăng nhập bằng Google
@@ -30,6 +31,7 @@ const SocialAuth = ({ isLoading, setLoading }) => {
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     setSelectedProvider("google");
+    hasProcessedUser.current = false; // Reset flag khi đăng nhập mới
     try {
       await signInWithPopup(auth, provider);
       // Xử lý tiếp được thực hiện trong useEffect khi user thay đổi
@@ -58,7 +60,10 @@ const SocialAuth = ({ isLoading, setLoading }) => {
      * Lưu thông tin user vào database sau khi đăng nhập thành công
      */
     const saveUserToDB = async () => {
+      if (hasProcessedUser.current) return; // Ngăn chặn xử lý lại
+
       try {
+        hasProcessedUser.current = true; // Đánh dấu đã xử lý
         // Chuẩn bị dữ liệu user để gửi lên server
         const userData = {
           email: user.email,
@@ -76,33 +81,26 @@ const SocialAuth = ({ isLoading, setLoading }) => {
           const userInfo = { ...res?.user, token: res?.token };
           localStorage.setItem("user", JSON.stringify(userInfo));
           setCredentials(userInfo);
-          // Chuyển hướng về trang chủ sau 1 giây
+          // Chuyển hướng về trang overview sau khi đăng nhập thành công
           setTimeout(() => {
             setLoading(false);
-            navigate("/");
+            navigate("/overview");
           }, 1000);
         }
       } catch (error) {
         console.error("Đã xảy ra lỗi:", error);
         toast.error(error?.response?.data?.message || error.message);
+        hasProcessedUser.current = false; // Reset nếu có lỗi
       } finally {
         setLoading(false);
       }
     };
-    // Chỉ lưu user khi đã đăng nhập thành công
-    if (user) {
+    // Chỉ lưu user khi đã đăng nhập thành công và chưa được xử lý
+    if (user && !hasProcessedUser.current) {
       saveUserToDB();
     }
-  }, [
-    user,
-    user?.uid,
-    user?.displayName,
-    user?.email,
-    selectedProvider,
-    setLoading,
-    setCredentials,
-    navigate,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid, navigate, selectedProvider, setCredentials, setLoading, user]);
 
   return (
     <div>
