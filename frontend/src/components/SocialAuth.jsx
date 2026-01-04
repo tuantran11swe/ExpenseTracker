@@ -99,14 +99,13 @@ const SocialAuth = ({ isLoading, setLoading }) => {
     if (user && !hasProcessedUser.current) {
       saveUserToDB();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.uid, navigate, selectedProvider, setCredentials, setLoading, user]);
 
   return (
     <div>
       {/* Nút đăng nhập với Google */}
       <Button
-        className="dark:bg-transparent dark:border-gray-800 w-full font-normal dark:text-gray-400 text-sm"
+        className="w-full font-normal text-sm"
         disabled={isLoading}
         onClick={signInWithGoogle}
         type="button"

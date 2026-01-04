@@ -5,14 +5,8 @@ const useStore = create((set) => ({
   // Hàm lưu thông tin user khi đăng nhập thành công
   setCredentials: (user) => set({ user }),
 
-  // Hàm đổi theme (light/dark)
-  setTheme: (value) => set({ theme: value }),
-
   // Hàm đăng xuất, xóa thông tin user
   signOut: () => set({ user: null }),
-  // Lưu theme hiện tại (light/dark), mặc định là "light"
-  // Lấy từ localStorage để giữ theme khi reload trang
-  theme: localStorage.getItem("theme") ?? "light",
 
   // Thông tin user đang đăng nhập, lấy từ localStorage
   // Trả về null nếu chưa đăng nhập

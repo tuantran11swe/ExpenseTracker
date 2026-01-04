@@ -5,6 +5,7 @@ import { BiLoader } from "react-icons/bi";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import z from "zod";
+import { Separator } from "../../components/Separator";
 import SocialAuth from "../../components/SocialAuth";
 import { Button } from "../../components/ui/button";
 import {
@@ -15,7 +16,6 @@ import {
   CardTitle,
 } from "../../components/ui/Card";
 import Input from "../../components/ui/Input";
-import { Separator } from "../../components/ui/Separator";
 import api from "../../libs/api";
 import useStore from "../../store";
 
@@ -81,12 +81,10 @@ const SignUp = () => {
 
   return (
     <div className="flex justify-center items-center py-10 w-full min-h-screen">
-      <Card className="bg-white dark:bg-black/20 shadow-md w-[400px] overflow-hidden">
+      <Card className="bg-white shadow-md w-[400px] overflow-hidden">
         <div className="p-6 md:-8">
           <CardHeader className="py-0">
-            <CardTitle className="mb-8 dark:text-white text-center">
-              Tạo tài khoản
-            </CardTitle>
+            <CardTitle className="mb-8 text-center">Tạo tài khoản</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <form
@@ -108,7 +106,7 @@ const SignUp = () => {
                   placeholder="Nguyễn Văn A"
                   type="text"
                   {...register("firstName")}
-                  className="dark:bg-transparent border dark:border-gray-800 dark:outline-none dark:placeholder:text-gray-700 dark:text-gray-400 text-sm"
+                  className="border text-sm"
                 />
                 {/* Input email */}
                 <Input
@@ -120,7 +118,7 @@ const SignUp = () => {
                   placeholder="example@gmail.com"
                   type="email"
                   {...register("email")}
-                  className="dark:bg-transparent border dark:border-gray-800 dark:outline-none dark:placeholder:text-gray-700 dark:text-gray-400 text-sm"
+                  className="border text-sm"
                 />
                 {/* Input mật khẩu */}
                 <Input
@@ -132,7 +130,7 @@ const SignUp = () => {
                   placeholder="Nhập mật khẩu của bạn"
                   type="password"
                   {...register("password")}
-                  className="dark:bg-transparent border dark:border-gray-800 dark:outline-none dark:placeholder:text-gray-700 dark:text-gray-400 text-sm"
+                  className="border text-sm"
                 />
               </div>
               {/* Nút đăng ký */}
