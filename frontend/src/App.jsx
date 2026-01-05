@@ -34,7 +34,7 @@ const RootLayout = () => {
 function App() {
   return (
     <main>
-      <div className="bg-gray-100 px-6 md:px-20 w-full min-h-screen">
+      <div className="bg-gray-100 px-4 md:px-10 w-full min-h-screen">
         <Routes>
           {/* Routes yêu cầu authentication */}
           <Route element={<RootLayout />}>
