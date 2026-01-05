@@ -36,6 +36,7 @@ export function Button({
   variant = "default",
   size = "default",
   className,
+  loading,
   ...props
 }) {
   return (
@@ -47,6 +48,7 @@ export function Button({
         sizeClasses[size], // Thêm class theo size
         className, // Thêm class tùy chỉnh từ props
       )}
+      disabled={loading || props.disabled}
       {...props}
     >
       {children}

@@ -46,7 +46,7 @@ const UserMenu = () => {
             {/* Hiển thị Tên và Email của người dùng (chỉ hiện trên màn hình md trở lên) */}
             <div className="hidden md:block text-left">
               <p className="font-medium text-black text-lg">
-                {user?.firstname}
+                {user?.firstname} {user?.lastname}
               </p>
               <span className="text-gray-700 text-sm">{user?.email}</span>
             </div>

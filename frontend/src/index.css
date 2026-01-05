@@ -29,3 +29,11 @@
 * {
   font-family: "Inter", sans-serif;
 }
+
+.inputStyles {
+  @apply bg-transparent px-3 py-2 border border-gray-300 rounded outline-none ring-blue-500 focus:ring-1 w-full text-gray-700 appearance-none;
+}
+
+.labelStyles {
+  @apply block mb-2 text-gray-700 text-sm md:text-base;
+}

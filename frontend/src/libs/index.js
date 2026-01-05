@@ -44,7 +44,9 @@ export const getDateSevenDaysAgo = () => {
 // Hàm lấy danh sách quốc gia và tiền tệ từ API bên ngoài
 export async function fetchCountries() {
   try {
-    const response = await fetch("https://restcountries.com/v3.1/all");
+    const response = await fetch(
+      "https://restcountries.com/v3.1/all?fields=name,flags,currencies,cca2",
+    );
     const data = await response.json();
 
     if (response.ok) {
@@ -53,6 +55,7 @@ export async function fetchCountries() {
         const currencyCode = Object.keys(currencies)[0];
 
         return {
+          cca2: country.cca2 || "",
           country: country.name?.common || "",
           currency: currencyCode || "",
           flag: country.flags?.png || "",
