@@ -1,3 +1,4 @@
+import ChangePasswordForm from "../components/ChangePasswordForm";
 import SettingsForm from "../components/SettingsForm";
 import Title from "../components/Title";
 import useStore from "../store";
@@ -36,7 +37,7 @@ const SettingsPage = () => {
 
           {/* Form cài đặt chi tiết */}
           <SettingsForm />
-          {/* {user?.provided && <ChangePasswordForm />} */}
+          {!user?.provider && <ChangePasswordForm />}
         </div>
       </div>
     </div>

@@ -20,9 +20,12 @@ const sizeClasses = {
  * @returns {JSX.Element} Input component
  */
 const Input = forwardRef(
-  ({ id, label, error, size = "default", className, ...props }, ref) => {
+  (
+    { id, label, error, size = "default", className, rightIcon, ...props },
+    ref,
+  ) => {
     return (
-      <div className="space-y-2 w-ful">
+      <div className="space-y-2 w-full">
         {/* Hiển thị label nếu có */}
         {label && (
           <label
@@ -32,24 +35,33 @@ const Input = forwardRef(
             {label}
           </label>
         )}
-        {/* Input field chính */}
-        <input
-          className={clsx(
-            // Style cơ bản: viền, bo góc, bóng đổ
-            "block w-full rounded-md border-gray-300 shadow-sm",
-            // Style khi focus: viền xanh, ring effect
-            "focus:border-indigo-300 focus:ring focus:ring-blue-400 focus:ring-opacity-50",
-            // Màu placeholder
-            "placeholder-gray-400",
-            // Style khi disabled: nền xám, con trỏ không cho phép
-            "disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed",
-            sizeClasses[size], // Áp dụng kích thước
-            className, // Class tùy chỉnh từ props
+        {/* Container tương đối để chứa icon bên phải */}
+        <div className="relative">
+          <input
+            className={clsx(
+              // Style cơ bản: viền, bo góc, bóng đổ
+              "block w-full rounded-md border-gray-300 shadow-sm",
+              // Style khi focus: viền xanh, ring effect
+              "focus:border-indigo-300 focus:ring focus:ring-blue-400 focus:ring-opacity-50",
+              // Màu placeholder
+              "placeholder-gray-400",
+              // Style khi disabled: nền xám, con trỏ không cho phép
+              "disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed",
+              sizeClasses[size], // Áp dụng kích thước
+              rightIcon && "pr-10", // Thêm padding phải nếu có icon
+              className, // Class tùy chỉnh từ props
+            )}
+            id={id}
+            ref={ref}
+            {...props}
+          />
+          {/* Render icon bên phải nếu được cung cấp */}
+          {rightIcon && (
+            <div className="right-0 absolute inset-y-0 flex items-center p-3">
+              {rightIcon}
+            </div>
           )}
-          id={id}
-          ref={ref}
-          {...props}
-        />
+        </div>
         {/* Hiển thị thông báo lỗi nếu có */}
         {error && <p className="mt-2 text-red-600 text-sm">{error}</p>}
       </div>

@@ -2,12 +2,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { BiLoader } from "react-icons/bi";
+import { PiEye, PiEyeSlash } from "react-icons/pi";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import z from "zod";
 import { Separator } from "../../components/Separator";
 import SocialAuth from "../../components/SocialAuth";
-import { Button } from "../../components/ui/button";
+import { Button } from "../../components/ui/Button";
 import {
   Card,
   CardContent,
@@ -44,6 +45,7 @@ const SignIn = () => {
 
   const navigate = useNavigate();
   const [loading, setLoading] = useState();
+  const [showPassword, setShowPassword] = useState(false);
 
   // Nếu đã đăng nhập, chuyển hướng về trang chủ
   useEffect(() => {
@@ -115,9 +117,24 @@ const SignIn = () => {
                   label="Mật khẩu"
                   name="password"
                   placeholder="Nhập mật khẩu của bạn"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   {...register("password")}
                   className="border text-sm"
+                  rightIcon={
+                    showPassword ? (
+                      <PiEye
+                        className="text-gray-500 cursor-pointer"
+                        onClick={() => setShowPassword(false)}
+                        size={22}
+                      />
+                    ) : (
+                      <PiEyeSlash
+                        className="text-gray-500 cursor-pointer"
+                        onClick={() => setShowPassword(true)}
+                        size={22}
+                      />
+                    )
+                  }
                 />
               </div>
               {/* Nút đăng nhập */}

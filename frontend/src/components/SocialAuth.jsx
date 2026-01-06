@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import api from "../libs/api";
 import { auth } from "../libs/firebaseConfig";
 import useStore from "../store";
-import { Button } from "./ui/button";
+import { Button } from "./ui/Button";
 
 /**
  * Component xử lý đăng nhập bằng các nhà cung cấp xác thực (Google, Github)
