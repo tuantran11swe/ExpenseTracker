@@ -9,24 +9,22 @@ const ICON_STYLES = [
   "bg-rose-300 text-rose-800",
 ];
 // Thành phần hiển thị các thẻ thống kê (Số dư, Thu nhập, Chi phí)
+// Nhận vào: dt (object chứa balance, income, expense từ backend)
 const Stats = ({ dt }) => {
   const data = [
     {
       amount: dt?.balance,
       icon: <BsCurrencyDollar size={26} />,
-      increase: 10.9,
       label: "Tổng số dư",
     },
     {
       amount: dt?.income,
       icon: <BsCashCoin size={26} />,
-      increase: 8.9,
       label: "Tổng thu nhập",
     },
     {
       amount: dt?.expense,
       icon: <SiCashapp size={26} />,
-      increase: -10.9,
       label: "Tổng chi phí",
     },
   ];

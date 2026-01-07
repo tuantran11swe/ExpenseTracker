@@ -40,6 +40,33 @@ const ICONS = {
   ),
 };
 
+// Hàm lấy icon tương ứng với tên tài khoản
+// Nhận vào: accountName (tên tài khoản từ backend)
+// Trả về: icon component hoặc null nếu không tìm thấy
+const getAccountIcon = (accountName) => {
+  if (!accountName) return null;
+
+  // Chuyển thành lowercase và loại bỏ khoảng trắng thừa
+  const normalizedName = accountName.toLowerCase().trim();
+
+  // Tìm kiếm từ khóa trong tên tài khoản
+  if (normalizedName.includes("cash")) {
+    return ICONS.cash;
+  }
+  if (normalizedName.includes("crypto")) {
+    return ICONS.crypto;
+  }
+  if (normalizedName.includes("paypal")) {
+    return ICONS.paypal;
+  }
+  if (normalizedName.includes("visa") || normalizedName.includes("debit")) {
+    return ICONS["visa debit card"];
+  }
+
+  // Thử tìm trực tiếp trong ICONS
+  return ICONS[normalizedName] || null;
+};
+
 /**
  * Component trang quản lý tài khoản
  * Hiển thị danh sách tất cả tài khoản của người dùng và các chức năng:
@@ -156,7 +183,7 @@ const AccountPage = () => {
                 key={acc.id}
               >
                 {/* Icon tương ứng với loại tài khoản */}
-                <div>{ICONS[acc?.account_name?.toLowerCase()]}</div>
+                <div>{getAccountIcon(acc?.account_name)}</div>
                 <div className="space-y-2 w-full">
                   {/* Header card: Tên tài khoản, icon verified, menu thao tác */}
                   <div className="flex justify-between items-center">

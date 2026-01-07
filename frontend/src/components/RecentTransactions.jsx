@@ -4,33 +4,45 @@ import { TiWarning } from "react-icons/ti";
 import { formatCurrency } from "../libs";
 import Title from "./Title";
 
-const data = [
-  {
-    amount: 150,
-    date: "2024-01-05",
-    name: "Online_Store",
-    source: "Credit Card",
-    status: "Completed",
-  },
-  {
-    amount: 75,
-    contact: "+1987654321",
-    date: "2024-01-12",
-    name: "Grocery Store",
-    source: "Debit Card",
-    status: "Rejected",
-  },
-  {
-    amount: 120,
-    contact: "+1122334455",
-    date: "2024-01-20",
-    name: "Utility Bill",
-    source: "Bank Transfer",
-    status: "Pending",
-  },
-];
+// Hàm format ngày tháng theo định dạng DD/MM/YYYY
+// Nhận vào: dateString (chuỗi ngày tháng)
+// Trả về: chuỗi ngày tháng đã được format theo định dạng DD/MM/YYYY
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
+// Hàm chuyển đổi trạng thái từ tiếng Anh sang tiếng Việt
+// Nhận vào: status (trạng thái tiếng Anh)
+// Trả về: trạng thái tiếng Việt tương ứng
+const translateStatus = (status) => {
+  const statusMap = {
+    Completed: "Hoàn thành",
+    Pending: "Đang chờ",
+    Rejected: "Từ chối",
+  };
+  return statusMap[status] || status;
+};
+
 // Thành phần hiển thị danh sách các giao dịch gần đây dưới dạng bảng
-const RecentTransactions = () => {
+// Nhận vào: data (mảng các giao dịch từ backend)
+const RecentTransactions = ({ data = [] }) => {
+  // Nếu không có dữ liệu, hiển thị thông báo
+  if (!data || data.length === 0) {
+    return (
+      <div className="py-20 w-full md:w-2/3">
+        <Title title="Giao dịch mới nhất" />
+        <div className="flex justify-center items-center mt-5 py-10 w-full text-gray-600 text-lg">
+          <span>Không có giao dịch gần đây</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="py-20 w-full md:w-2/3">
       <Title title="Giao dịch mới nhất" />
@@ -39,27 +51,24 @@ const RecentTransactions = () => {
           <thead className="border-gray-300 border-b w-full">
             <tr className="w-full text-black text-left">
               <th className="py-2">Ngày</th>
-              <th className="py-2">Tên</th>
+              <th className="py-2">Mô tả</th>
               <th className="py-2">Trạng thái</th>
               <th className="py-2">Nguồn</th>
               <th className="py-2">Số tiền</th>
             </tr>
           </thead>
           <tbody>
-            {data.slice(0, 5).map((item) => (
+            {data.slice(0, 5).map((item, index) => (
               <tr
                 className="hover:bg-gray-300 border-gray-200 border-b text-gray-600"
-                key={item.name + item.date + item.amount}
+                key={`${item.createdat}-${item.description}-${item.amount}-${index}`}
               >
-                <td className="px-2 py-2">{item.date}</td>
+                <td className="px-2 py-2">{formatDate(item.createdat)}</td>
                 <td className="px-2 py-2">
                   <div>
                     <p className="font-medium text-black text-lg">
-                      {item.name}
+                      {item.description}
                     </p>
-                    <span className="text-gray-600 text-sm">
-                      {item.contact}
-                    </span>
                   </div>
                 </td>
                 <td className="flex items-center gap-2 px-2 py-2">
@@ -76,16 +85,19 @@ const RecentTransactions = () => {
                   {item.status === "Rejected" && (
                     <TiWarning className="text-red-600" size={22} />
                   )}
-                  <span>
-                    {item.status === "Completed"
-                      ? "Hoàn thành"
-                      : item.status === "Pending"
-                        ? "Đang chờ"
-                        : "Từ chối"}
-                  </span>
+                  <span>{translateStatus(item.status)}</span>
                 </td>
                 <td className="px-2 py-2">{item.source}</td>
                 <td className="px-2 py-2 font-medium text-black text-base">
+                  <span
+                    className={`${
+                      item?.type === "income"
+                        ? "text-emerald-600"
+                        : "text-red-600"
+                    } text-lg font-bold ml-1`}
+                  >
+                    {item?.type === "income" ? "+" : "-"}
+                  </span>
                   {formatCurrency(item.amount)}
                 </td>
               </tr>
