@@ -10,13 +10,40 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Enable CORS for frontend
+// Cho phép cả localhost (development) và production origin
+const allowedOrigins = [
+  "http://localhost:5173", // Development
+  process.env.FRONTEND_URL, // Production từ biến môi trường (nếu có)
+].filter(Boolean); // Loại bỏ giá trị undefined nếu FRONTEND_URL không được set
+
 app.use(
   cors({
     allowedHeaders: "Content-Type,Authorization",
     credentials: true,
     methods: "GET,POST,PUT,PATCH,DELETE,OPTIONS",
-    origin: "http://localhost:5173",
-  }),
+    origin: (origin, callback) => {
+      // Cho phép requests không có origin (như mobile apps hoặc Postman)
+      if (!origin) return callback(null, true);
+
+      // Kiểm tra nếu origin nằm trong danh sách được phép
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      }
+      // Cho phép tất cả các origin từ Vercel (production)
+      // Pattern: https://*-*.vercel.app hoặc https://*.vercel.app
+      else if (origin.includes(".vercel.app")) {
+        callback(null, true);
+      }
+      // Cho phép tất cả các origin từ Render (nếu frontend cũng deploy trên Render)
+      else if (origin.includes(".onrender.com")) {
+        callback(null, true);
+      } else {
+        // Trong production, có thể log để debug
+        console.warn(`CORS: Origin không được phép: ${origin}`);
+        callback(new Error("Không được phép bởi CORS policy"));
+      }
+    },
+  })
 );
 
 app.use(express.json());
