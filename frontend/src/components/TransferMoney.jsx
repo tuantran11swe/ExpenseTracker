@@ -59,7 +59,7 @@ const TransferMoney = ({ isOpen, setIsOpen, refetch }) => {
       // Gọi API PUT để thực hiện giao dịch chuyển tiền
       const { data: res } = await api.put(
         "/transaction/transfer-money",
-        newData
+        newData,
       );
 
       if (res?.status === "success") {
@@ -88,7 +88,7 @@ const TransferMoney = ({ isOpen, setIsOpen, refetch }) => {
   const getAccountBalance = (setAccount, val) => {
     // Tìm tài khoản trong danh sách có tên trùng khớp
     const filteredAccount = accountData?.find(
-      (account) => account.account_name === val
+      (account) => account.account_name === val,
     );
 
     // Cập nhật state với thông tin tài khoản đã tìm được
