@@ -37,6 +37,17 @@ const SocialAuth = ({ isLoading, setLoading }) => {
       // Xử lý tiếp được thực hiện trong useEffect khi user thay đổi
     } catch (error) {
       console.error("Lỗi khi đăng nhập với Google", error);
+      // Hiển thị thông báo lỗi chi tiết cho người dùng
+      if (error.code === "auth/unauthorized-domain") {
+        toast.error(
+          "Domain chưa được cấu hình trong Firebase. Vui lòng liên hệ quản trị viên.",
+        );
+      } else if (error.code === "auth/popup-closed-by-user") {
+        toast.info("Bạn đã đóng cửa sổ đăng nhập");
+      } else {
+        toast.error(error.message || "Đã xảy ra lỗi khi đăng nhập với Google");
+      }
+      setLoading(false);
     }
   };
 

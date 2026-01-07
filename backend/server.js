@@ -43,7 +43,7 @@ app.use(
         callback(new Error("Không được phép bởi CORS policy"));
       }
     },
-  })
+  }),
 );
 
 app.use(express.json());
