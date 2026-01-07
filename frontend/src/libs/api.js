@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // URL cơ sở của API backend
-const API_URL = "http://localhost:5000/api";
+const API_URL = "https://expensetracker-6chn.onrender.com/api";
 
 // Tạo instance axios với cấu hình mặc định
 const api = axios.create({
