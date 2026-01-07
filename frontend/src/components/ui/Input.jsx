@@ -19,7 +19,7 @@ const sizeClasses = {
  * @param {React.Ref} ref - Ref được forward từ component cha
  * @returns {JSX.Element} Input component
  */
-const Input = forwardRef(
+export const Input = forwardRef(
   (
     { id, label, error, size = "default", className, rightIcon, ...props },
     ref,

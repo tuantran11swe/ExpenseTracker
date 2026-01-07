@@ -37,3 +37,7 @@
 .labelStyles {
   @apply block mb-2 text-gray-700 text-sm md:text-base;
 }
+
+.inputStyle {
+  @apply bg-transparent border border-gray-300 outline-none w-full text-gray-700 placeholder:text-gray-400 text-sm;
+}
