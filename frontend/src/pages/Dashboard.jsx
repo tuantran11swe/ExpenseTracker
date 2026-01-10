@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import Accounts from "../components/Accounts";
-import { Chart } from "../components/Chart";
+import AccountList from "../components/Accounts";
+import { TransactionChart } from "../components/Chart";
 import DoughnutChart from "../components/DoughnutChart";
-import Info from "../components/Info";
+import UserInfo from "../components/Info";
 import Loading from "../components/Loading";
 import RecentTransactions from "../components/RecentTransactions";
-import Stats from "../components/Stats";
+import FinancialStats from "../components/Stats";
 import api from "../libs/api";
 
 // Trang chính của Dashboard hiển thị tổng quan về tài chính
@@ -15,11 +15,11 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false); // Trạng thái tải dữ liệu
 
   // Hàm gọi API để lấy thống kê cho dashboard
-  const fetchDashboardStats = useCallback(async () => {
-    const URL = "/transaction/dashboard";
+  const fetchDashboardData = useCallback(async () => {
+    const apiUrl = "/transaction/dashboard";
     try {
-      const { data } = await api.get(URL);
-      setData(data); // Cập nhật dữ liệu khi lấy thành công
+      const { data: responseData } = await api.get(apiUrl);
+      setData(responseData); // Cập nhật dữ liệu khi lấy thành công
     } catch (error) {
       console.log(error);
       toast.error(
@@ -36,8 +36,8 @@ const Dashboard = () => {
 
   useEffect(() => {
     setIsLoading(true);
-    fetchDashboardStats();
-  }, [fetchDashboardStats]);
+    fetchDashboardData();
+  }, [fetchDashboardData]);
   if (isLoading)
     return (
       <div className="flex justify-center items-center w-full h-[80vh]">
@@ -47,8 +47,8 @@ const Dashboard = () => {
 
   return (
     <div className="px-0">
-      <Info />
-      <Stats
+      <UserInfo />
+      <FinancialStats
         dt={{
           balance: data?.availableBalance,
           expense: data?.totalExpense,
@@ -56,7 +56,7 @@ const Dashboard = () => {
         }}
       />
       <div className="flex md:flex-row flex-col-reverse items-center gap-10 w-full">
-        <Chart data={data?.chartData} />
+        <TransactionChart data={data?.chartData} />
         {data?.totalIncome > 0 && (
           <DoughnutChart
             dt={{
@@ -69,7 +69,9 @@ const Dashboard = () => {
       </div>
       <div className="flex md:flex-row flex-col-reverse gap-0 md:gap-10 2xl:gap-20">
         <RecentTransactions data={data?.lastTransactions} />
-        {data?.lastAccount?.length > 0 && <Accounts data={data?.lastAccount} />}
+        {data?.lastAccount?.length > 0 && (
+          <AccountList data={data?.lastAccount} />
+        )}
       </div>
     </div>
   );

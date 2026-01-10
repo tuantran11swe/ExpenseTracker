@@ -11,7 +11,7 @@ import {
 import Title from "./Title";
 
 // Thành phần hiển thị biểu đồ đường (Line Chart) cho hoạt động giao dịch (Thu nhập & Chi phí)
-export const Chart = ({ data }) => {
+export const TransactionChart = ({ data }) => {
   return (
     <div className="flex-1 w-full">
       <Title title="Hoạt động giao dịch" />

@@ -1,7 +1,7 @@
 import express from "express";
 import {
-  signinUser,
-  signupUser,
+  authenticateUser,
+  registerUser,
   socialSignIn,
 } from "../controllers/authController.js";
 
@@ -10,11 +10,11 @@ const router = express.Router();
 
 // Route đăng ký user mới
 // Endpoint: POST /api/auth/sign-up
-router.post("/sign-up", signupUser);
+router.post("/sign-up", registerUser);
 
 // Route đăng nhập user
 // Endpoint: POST /api/auth/sign-in
-router.post("/sign-in", signinUser);
+router.post("/sign-in", authenticateUser);
 
 // Route đăng nhập bằng mạng xã hội (Google, Github, etc.)
 // Endpoint: POST /api/auth/social-sign-in

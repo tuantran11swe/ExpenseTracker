@@ -1,5 +1,5 @@
 // Thành phần hiển thị tiêu đề và phụ đề thông tin (thường dùng ở đầu trang)
-const Info = ({ title, subTitle }) => {
+const UserInfo = ({ title, subTitle }) => {
   return (
     <div className="flex md:flex-row flex-col justify-between md:items-center py-8">
       <div className="mb-6">
@@ -10,4 +10,4 @@ const Info = ({ title, subTitle }) => {
   );
 };
 
-export default Info;
+export default UserInfo;

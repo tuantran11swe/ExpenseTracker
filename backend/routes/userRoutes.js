@@ -1,8 +1,8 @@
 import express from "express";
 import {
-  changePassword,
-  getUser,
+  getUserProfile,
   updateUser,
+  updateUserPassword,
 } from "../controllers/userController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
@@ -11,11 +11,11 @@ const router = express.Router();
 
 // Route lấy thông tin user hiện tại (protected - yêu cầu JWT token)
 // Endpoint: GET /api/user/
-router.get("/", authMiddleware, getUser);
+router.get("/", authMiddleware, getUserProfile);
 
 // Route đổi mật khẩu (protected - yêu cầu JWT token)
 // Endpoint: PUT /api/user/change-password
-router.put("/change-password", authMiddleware, changePassword);
+router.put("/change-password", authMiddleware, updateUserPassword);
 
 // Route cập nhật thông tin user (protected - yêu cầu JWT token)
 // Endpoint: PUT /api/user/

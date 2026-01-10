@@ -58,7 +58,7 @@ const getAccountIcon = (accountName) => {
 
 // Thành phần hiển thị danh sách các tài khoản từ backend
 // Nhận vào: data (mảng các tài khoản từ backend)
-const Accounts = ({ data = [] }) => {
+const AccountList = ({ data = [] }) => {
   // Nếu không có dữ liệu, hiển thị thông báo
   if (!data || data.length === 0) {
     return (
@@ -67,7 +67,7 @@ const Accounts = ({ data = [] }) => {
         <span className="text-gray-600 text-sm">
           Xem tất cả các tài khoản của bạn
         </span>
-        <div className="flex justify-center items-center py-10 w-full text-gray-600 text-lg mt-5">
+        <div className="flex justify-center items-center mt-5 py-10 w-full text-gray-600 text-lg">
           <span>Không có tài khoản</span>
         </div>
       </div>
@@ -107,4 +107,4 @@ const Accounts = ({ data = [] }) => {
   );
 };
 
-export default Accounts;
+export default AccountList;

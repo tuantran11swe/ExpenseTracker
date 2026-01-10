@@ -19,15 +19,15 @@ const links = [
 
 // Component hiển thị menu người dùng (Avatar, Email, Nút Đăng xuất)
 const UserMenu = () => {
-  const { user, setCredentials } = useStore((state) => state);
+  const { user, setUserCredentials } = useStore((state) => state);
   const navigate = useNavigate();
 
   // Hàm xử lý đăng xuất người dùng
-  const handleSignout = async () => {
+  const handleLogout = async () => {
     try {
       await signOut(auth);
       localStorage.removeItem("user");
-      setCredentials(null);
+      setUserCredentials(null);
       navigate("/sign-in");
     } catch (error) {
       console.error("Lỗi khi đăng xuất:", error);
@@ -63,7 +63,7 @@ const UserMenu = () => {
                   className={`${
                     active ? "bg-violet-500/10 text-gray-900" : "text-gray-900"
                   } group flex w-full items-center rounded-md px-2 py-2 text-sm cursor-pointer`}
-                  onClick={handleSignout}
+                  onClick={handleLogout}
                   type="button"
                 >
                   Đăng xuất

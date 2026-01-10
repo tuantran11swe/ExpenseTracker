@@ -5,7 +5,7 @@ import { comparePassword, createJWT, hashPassword } from "../libs/index.js";
  * Controller xử lý đăng ký user mới
  * Route: POST /api/auth/sign-up
  */
-export const signupUser = async (req, res) => {
+export const registerUser = async (req, res) => {
   try {
     // Lấy thông tin từ request body
     const { firstName, email, password } = req.body;
@@ -19,13 +19,13 @@ export const signupUser = async (req, res) => {
     }
 
     // Kiểm tra email đã tồn tại trong database chưa
-    const userExist = await pool.query({
+    const userExists = await pool.query({
       text: "SELECT EXISTS (SELECT * FROM tbluser WHERE email = $1)",
       values: [email],
     });
 
     // Nếu email đã tồn tại, trả về lỗi 409 (Conflict)
-    if (userExist.rows[0].exists) {
+    if (userExists.rows[0].exists) {
       return res.status(409).json({
         message: "Email đã tồn tại. Vui lòng đăng nhập",
         status: "failed",
@@ -36,19 +36,19 @@ export const signupUser = async (req, res) => {
     const hashedPassword = await hashPassword(password);
 
     // Thêm user mới vào database và trả về thông tin user vừa tạo
-    const user = await pool.query({
+    const queryResult = await pool.query({
       text: `INSERT INTO tbluser (firstname, email, password) VALUES ($1, $2, $3) RETURNING *`,
       values: [firstName, email, hashedPassword],
     });
 
     // Xóa password khỏi response để không gửi về client
-    user.rows[0].password = undefined;
+    queryResult.rows[0].password = undefined;
 
     // Trả về response thành công với mã 201 (Created)
     res.status(201).json({
       message: "Tạo tài khoản thành công",
       status: "success",
-      user: user.rows[0],
+      user: queryResult.rows[0],
     });
   } catch (error) {
     // Xử lý lỗi nếu có bất kỳ exception nào xảy ra
@@ -61,7 +61,7 @@ export const signupUser = async (req, res) => {
  * Controller xử lý đăng nhập user
  * Route: POST /api/auth/sign-in
  */
-export const signinUser = async (req, res) => {
+export const authenticateUser = async (req, res) => {
   try {
     // Lấy email và password từ request body
     const { email, password } = req.body;
@@ -75,15 +75,15 @@ export const signinUser = async (req, res) => {
     }
 
     // Tìm user trong database theo email
-    const result = await pool.query({
+    const queryResult = await pool.query({
       text: `SELECT * FROM tbluser WHERE email = $1`,
       values: [email],
     });
 
-    const user = result.rows[0];
+    const userProfile = queryResult.rows[0];
 
     // Nếu không tìm thấy user, trả về lỗi 404
-    if (!user) {
+    if (!userProfile) {
       return res.status(404).json({
         message: "Email hoặc mật khẩu không hợp lệ.",
         status: "failed",
@@ -91,10 +91,13 @@ export const signinUser = async (req, res) => {
     }
 
     // So sánh password người dùng nhập với password đã hash trong database
-    const isMatch = await comparePassword(password, user?.password);
+    const isPasswordMatch = await comparePassword(
+      password,
+      userProfile?.password,
+    );
 
     // Nếu password không khớp, trả về lỗi 404
-    if (!isMatch) {
+    if (!isPasswordMatch) {
       return res.status(404).json({
         message: "Email hoặc mật khẩu không hợp lệ",
         status: "failed",
@@ -102,17 +105,17 @@ export const signinUser = async (req, res) => {
     }
 
     // Tạo JWT token với user ID để xác thực các request sau này
-    const token = createJWT(user.id);
+    const authToken = createJWT(userProfile.id);
 
     // Xóa password khỏi response để không gửi về client
-    user.password = undefined;
+    userProfile.password = undefined;
 
     // Trả về response thành công với token và thông tin user
     res.status(200).json({
       message: "Đăng nhập thành công",
       status: "success",
-      token,
-      user,
+      token: authToken,
+      user: userProfile,
     });
   } catch (error) {
     // Xử lý lỗi nếu có bất kỳ exception nào xảy ra
@@ -140,37 +143,37 @@ export const socialSignIn = async (req, res) => {
     }
 
     // Tìm user trong database theo email
-    const result = await pool.query({
+    const queryResult = await pool.query({
       text: `SELECT * FROM tbluser WHERE email = $1`,
       values: [email],
     });
 
-    let user = result.rows[0];
+    let userProfile = queryResult.rows[0];
 
     // Nếu user chưa tồn tại, tạo mới
-    if (!user) {
+    if (!userProfile) {
       const newUserResult = await pool.query({
         text: `INSERT INTO tbluser (firstname, email, provider) VALUES ($1, $2, $3) RETURNING *`,
         values: [name || "User", email, provider],
       });
-      user = newUserResult.rows[0];
+      userProfile = newUserResult.rows[0];
     }
 
     // Tạo JWT token với user ID để xác thực các request sau này
-    const token = createJWT(user.id);
+    const authToken = createJWT(userProfile.id);
 
     // Xóa password khỏi response để không gửi về client
-    user.password = undefined;
+    userProfile.password = undefined;
 
     // Trả về response thành công với token và thông tin user
     res.status(200).json({
       message:
-        user.id === result.rows[0]?.id
+        userProfile.id === queryResult.rows[0]?.id
           ? "Đăng nhập thành công"
           : "Tạo tài khoản thành công",
       status: "success",
-      token,
-      user,
+      token: authToken,
+      user: userProfile,
     });
   } catch (error) {
     // Xử lý lỗi nếu có bất kỳ exception nào xảy ra

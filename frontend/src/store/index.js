@@ -2,11 +2,10 @@ import { create } from "zustand";
 
 // Tạo store toàn cục sử dụng Zustand để quản lý state
 const useStore = create((set) => ({
-  // Hàm lưu thông tin user khi đăng nhập thành công
-  setCredentials: (user) => set({ user }),
-
   // Hàm đăng xuất, xóa thông tin user
-  signOut: () => set({ user: null }),
+  logoutUser: () => set({ user: null }),
+  // Hàm lưu thông tin user khi đăng nhập thành công
+  setUserCredentials: (user) => set({ user }),
 
   // Thông tin user đang đăng nhập, lấy từ localStorage
   // Trả về null nếu chưa đăng nhập

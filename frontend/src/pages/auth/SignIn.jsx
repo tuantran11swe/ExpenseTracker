@@ -34,7 +34,7 @@ const LoginSchema = z.object({
  * Component trang Đăng nhập
  */
 const SignIn = () => {
-  const { user, setCredentials } = useStore((state) => state);
+  const { user, setUserCredentials } = useStore((state) => state);
   const {
     register,
     handleSubmit,
@@ -64,10 +64,10 @@ const SignIn = () => {
 
       if (res?.user) {
         toast.success(res?.message || "Đăng nhập thành công");
-        const userInfo = { ...res?.user, token: res?.token };
-        localStorage.setItem("user", JSON.stringify(userInfo));
+        const userCredentials = { ...res?.user, token: res?.token };
+        localStorage.setItem("user", JSON.stringify(userCredentials));
         // Lưu thông tin user và token vào store
-        setCredentials(userInfo);
+        setUserCredentials(userCredentials);
         setTimeout(() => {
           setLoading(false);
           navigate("/overview");

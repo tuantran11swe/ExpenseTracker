@@ -10,7 +10,7 @@ import { getMonthName } from "../libs/index.js";
  *   - dt: Ngày kết thúc (date to)
  *   - s: Từ khóa tìm kiếm (search term)
  */
-export const getTransactions = async (req, res) => {
+export const getUserTransactions = async (req, res) => {
   try {
     const today = new Date();
 
@@ -33,14 +33,14 @@ export const getTransactions = async (req, res) => {
     // - user_id khớp
     // - createdat trong khoảng thời gian
     // - description/status/source chứa từ khóa tìm kiếm (không phân biệt hoa thường)
-    const transactions = await pool.query({
+    const transactionsResult = await pool.query({
       text: `SELECT * FROM tbltransaction WHERE user_id = $1 AND createdat BETWEEN $2 AND $3 AND (description ILIKE '%' || $4 || '%' OR status ILIKE '%' || $4 || '%' OR source ILIKE '%' || $4 || '%') ORDER BY id DESC`,
       values: [userId, startDate, endDate, s || ""],
     });
 
     // Trả về danh sách giao dịch
     res.status(200).json({
-      data: transactions.rows,
+      data: transactionsResult.rows,
       status: "success",
     });
   } catch (error) {
@@ -57,34 +57,34 @@ export const getTransactions = async (req, res) => {
  * Trả về: Tổng thu nhập, tổng chi tiêu, số dư khả dụng, dữ liệu biểu đồ theo tháng,
  *         5 giao dịch gần nhất, 4 tài khoản gần nhất
  */
-export const getDashboardInformation = async (req, res) => {
+export const getDashboardData = async (req, res) => {
   try {
     // Lấy userId từ JWT token đã được xác thực bởi middleware
     const { userId } = req.user;
 
-    let totalIncome = 0;
-    let totalExpense = 0;
+    let totalIncomeAmount = 0;
+    let totalExpenseAmount = 0;
 
     // Tính tổng thu nhập và chi tiêu từ tất cả giao dịch
-    const transactionsResult = await pool.query({
+    const transactionSummaryResult = await pool.query({
       text: `SELECT type, SUM(amount) AS totalAmount FROM
     tbltransaction WHERE user_id = $1 GROUP BY type`,
       values: [userId],
     });
 
-    const transactions = transactionsResult.rows;
+    const transactionSummary = transactionSummaryResult.rows;
 
     // Phân loại và tính tổng thu nhập và chi tiêu
-    transactions.forEach((transaction) => {
+    transactionSummary.forEach((transaction) => {
       if (transaction.type === "income") {
-        totalIncome += Number(transaction.totalamount);
+        totalIncomeAmount += Number(transaction.totalamount);
       } else {
-        totalExpense += Number(transaction.totalamount);
+        totalExpenseAmount += Number(transaction.totalamount);
       }
     });
 
     // Tính số dư khả dụng = tổng thu nhập - tổng chi tiêu
-    const availableBalance = totalIncome - totalExpense;
+    const availableBalance = totalIncomeAmount - totalExpenseAmount;
 
     // Tính toán dữ liệu biểu đồ theo tháng trong năm hiện tại
     const year = new Date().getFullYear();
@@ -92,7 +92,7 @@ export const getDashboardInformation = async (req, res) => {
     const end_Date = new Date(year, 11, 31, 23, 59, 59); // Ngày 31 tháng 12 của năm
 
     // Truy vấn tổng hợp giao dịch theo tháng và loại (income/expense)
-    const result = await pool.query({
+    const monthlyDataResult = await pool.query({
       text: `
       SELECT
         EXTRACT(MONTH FROM createdat) AS month,
@@ -109,51 +109,51 @@ export const getDashboardInformation = async (req, res) => {
     });
 
     // Tổ chức dữ liệu thành mảng 12 tháng (Tháng 1 - Tháng 12)
-    const data = new Array(12).fill().map((_, index) => {
+    const chartData = new Array(12).fill().map((_, index) => {
       // Lọc dữ liệu cho tháng hiện tại
-      const monthData = result.rows.filter(
+      const monthData = monthlyDataResult.rows.filter(
         (item) => parseInt(item.month, 10) === index + 1,
       );
 
       // Tìm tổng thu nhập và chi tiêu của tháng
-      const income =
+      const monthlyIncome =
         monthData.find((item) => item.type === "income")?.totalamount || 0;
 
-      const expense =
+      const monthlyExpense =
         monthData.find((item) => item.type === "expense")?.totalamount || 0;
 
       return {
-        expense: Number(expense),
-        income: Number(income),
+        expense: Number(monthlyExpense),
+        income: Number(monthlyIncome),
         label: getMonthName(index),
       };
     });
 
     // Lấy 5 giao dịch gần nhất
-    const lastTransactionsResult = await pool.query({
+    const recentTransactionsResult = await pool.query({
       text: `SELECT * FROM tbltransaction WHERE user_id = $1 ORDER BY id DESC LIMIT 5`,
       values: [userId],
     });
 
-    const lastTransactions = lastTransactionsResult.rows;
+    const recentTransactions = recentTransactionsResult.rows;
 
     // Lấy 4 tài khoản gần nhất
-    const lastAccountResult = await pool.query({
+    const recentAccountsResult = await pool.query({
       text: `SELECT * FROM tblaccount WHERE user_id = $1 ORDER BY id DESC LIMIT 4`,
       values: [userId],
     });
 
-    const lastAccount = lastAccountResult.rows;
+    const recentAccounts = recentAccountsResult.rows;
 
     // Trả về tất cả thông tin dashboard
     res.status(200).json({
       availableBalance,
-      chartData: data,
-      lastAccount,
-      lastTransactions,
+      chartData: chartData,
+      lastAccount: recentAccounts,
+      lastTransactions: recentTransactions,
       status: "success",
-      totalExpense,
-      totalIncome,
+      totalExpense: totalExpenseAmount,
+      totalIncome: totalIncomeAmount,
     });
   } catch (error) {
     // Xử lý lỗi nếu có bất kỳ exception nào xảy ra
@@ -170,7 +170,7 @@ export const getDashboardInformation = async (req, res) => {
  * Body: { description, source, amount }
  * Sử dụng database transaction để đảm bảo tính nhất quán dữ liệu
  */
-export const addTransaction = async (req, res) => {
+export const createExpenseTransaction = async (req, res) => {
   try {
     // Lấy userId từ JWT token đã được xác thực bởi middleware
     const { userId } = req.user;
@@ -194,12 +194,12 @@ export const addTransaction = async (req, res) => {
         .json({ message: "Số tiền phải lớn hơn 0.", status: "failed" });
 
     // Kiểm tra thông tin tài khoản có tồn tại không
-    const result = await pool.query({
+    const accountQueryResult = await pool.query({
       text: `SELECT * FROM tblaccount WHERE id = $1`,
       values: [account_id],
     });
 
-    const accountInfo = result.rows[0];
+    const accountInfo = accountQueryResult.rows[0];
 
     if (!accountInfo) {
       return res.status(404).json({
@@ -258,7 +258,7 @@ export const addTransaction = async (req, res) => {
  * Sử dụng database transaction để đảm bảo tính nhất quán dữ liệu
  * Tạo 2 transaction records: expense cho tài khoản gửi, income cho tài khoản nhận
  */
-export const transferMoneyToAccount = async (req, res) => {
+export const transferBetweenAccounts = async (req, res) => {
   try {
     // Lấy userId từ JWT token đã được xác thực bởi middleware
     const { userId } = req.user;
@@ -274,10 +274,10 @@ export const transferMoneyToAccount = async (req, res) => {
     }
 
     // Chuyển đổi số tiền sang số
-    const newAmount = Number(amount);
+    const transferAmount = Number(amount);
 
     // Kiểm tra số tiền phải lớn hơn 0
-    if (newAmount <= 0)
+    if (transferAmount <= 0)
       return res.status(403).json({
         message: "Số tiền phải lớn hơn 0.",
         status: "failed",
@@ -299,7 +299,7 @@ export const transferMoneyToAccount = async (req, res) => {
     }
 
     // Kiểm tra số dư tài khoản gửi có đủ không
-    if (newAmount > fromAccount.account_balance) {
+    if (transferAmount > fromAccount.account_balance) {
       return res.status(403).json({
         message: "Chuyển tiền thất bại. Số dư tài khoản không đủ.",
         status: "failed",
@@ -327,23 +327,23 @@ export const transferMoneyToAccount = async (req, res) => {
     // Trừ tiền từ tài khoản gửi
     await pool.query({
       text: `UPDATE tblaccount SET account_balance = account_balance - $1, updatedat = CURRENT_TIMESTAMP WHERE id = $2`,
-      values: [newAmount, from_account],
+      values: [transferAmount, from_account],
     });
 
     // Cộng tiền vào tài khoản nhận
-    const _toAccountUpdate = await pool.query({
+    const _toAccountUpdateResult = await pool.query({
       text: `UPDATE tblaccount SET account_balance = account_balance + $1, updatedat = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *`,
-      values: [newAmount, to_account],
+      values: [transferAmount, to_account],
     });
 
     // Tạo transaction record cho tài khoản gửi (expense)
-    const description = `Chuyển tiền từ ${fromAccount.account_name} đến ${toAccount.account_name}`;
+    const transferDescription = `Chuyển tiền từ ${fromAccount.account_name} đến ${toAccount.account_name}`;
 
     await pool.query({
       text: `INSERT INTO tbltransaction(user_id, description, type, status, amount, source) VALUES($1, $2, $3, $4, $5, $6)`,
       values: [
         userId,
-        description,
+        transferDescription,
         "expense",
         "Completed",
         amount,
@@ -352,13 +352,13 @@ export const transferMoneyToAccount = async (req, res) => {
     });
 
     // Tạo transaction record cho tài khoản nhận (income)
-    const description1 = `Nhận tiền từ ${fromAccount.account_name} đến ${toAccount.account_name}`;
+    const receiveDescription = `Nhận tiền từ ${fromAccount.account_name} đến ${toAccount.account_name}`;
 
     await pool.query({
       text: `INSERT INTO tbltransaction(user_id, description, type, status, amount, source) VALUES($1, $2, $3, $4, $5, $6)`,
       values: [
         userId,
-        description1,
+        receiveDescription,
         "income",
         "Completed",
         amount,

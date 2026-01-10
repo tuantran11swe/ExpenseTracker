@@ -10,7 +10,7 @@ const ICON_STYLES = [
 ];
 // Thành phần hiển thị các thẻ thống kê (Số dư, Thu nhập, Chi phí)
 // Nhận vào: dt (object chứa balance, income, expense từ backend)
-const Stats = ({ dt }) => {
+const FinancialStats = ({ dt }) => {
   const data = [
     {
       amount: dt?.balance,
@@ -65,4 +65,4 @@ const Stats = ({ dt }) => {
   );
 };
 
-export default Stats;
+export default FinancialStats;

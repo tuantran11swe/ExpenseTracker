@@ -21,7 +21,7 @@ import { Button } from "./ui/Button";
 const SocialAuth = ({ isLoading, setLoading }) => {
   const [user] = useAuthState(auth); // Lấy thông tin user từ Firebase
   const [selectedProvider, setSelectedProvider] = useState("google"); // Provider được chọn
-  const { setCredentials } = useStore((state) => state);
+  const { setUserCredentials } = useStore((state) => state);
   const navigate = useNavigate();
   const hasProcessedUser = useRef(false); // Theo dõi xem đã xử lý user chưa
 
@@ -89,9 +89,9 @@ const SocialAuth = ({ isLoading, setLoading }) => {
         if (res?.user) {
           toast.success(res?.message);
           // Lưu thông tin user và token vào localStorage
-          const userInfo = { ...res?.user, token: res?.token };
-          localStorage.setItem("user", JSON.stringify(userInfo));
-          setCredentials(userInfo);
+          const userCredentials = { ...res?.user, token: res?.token };
+          localStorage.setItem("user", JSON.stringify(userCredentials));
+          setUserCredentials(userCredentials);
           // Chuyển hướng về trang overview sau khi đăng nhập thành công
           setTimeout(() => {
             setLoading(false);
@@ -110,7 +110,14 @@ const SocialAuth = ({ isLoading, setLoading }) => {
     if (user && !hasProcessedUser.current) {
       saveUserToDB();
     }
-  }, [user?.uid, navigate, selectedProvider, setCredentials, setLoading, user]);
+  }, [
+    user?.uid,
+    navigate,
+    selectedProvider,
+    setUserCredentials,
+    setLoading,
+    user,
+  ]);
 
   return (
     <div>

@@ -14,11 +14,11 @@ import useStore from "./store";
  * Component Layout chính - Kiểm tra authentication và thiết lập token
  */
 const RootLayout = () => {
-  const user = useStore((state) => state.user);
+  const userProfile = useStore((state) => state.user);
   // Thiết lập auth token cho các API request
-  setAuthToken(user?.token || "");
+  setAuthToken(userProfile?.token || "");
 
-  return !user ? (
+  return !userProfile ? (
     // Nếu chưa đăng nhập, chuyển hướng đến trang sign-in
     <Navigate replace={true} to="sign-in" />
   ) : (

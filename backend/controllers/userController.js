@@ -6,33 +6,33 @@ import { comparePassword, hashPassword } from "../libs/index.js";
  * Route: GET /api/user/
  * Yêu cầu: Phải có JWT token trong header (protected route)
  */
-export const getUser = async (req, res) => {
+export const getUserProfile = async (req, res) => {
   try {
     // Lấy userId từ JWT token đã được xác thực bởi middleware
     const { userId } = req.user;
 
     // Tìm user trong database theo ID
-    const userExist = await pool.query({
+    const userExists = await pool.query({
       text: `SELECT * FROM tbluser WHERE id = $1`,
       values: [userId],
     });
 
-    const user = userExist.rows[0];
+    const userProfile = userExists.rows[0];
 
     // Nếu không tìm thấy user, trả về lỗi 404
-    if (!user) {
+    if (!userProfile) {
       return res
         .status(404)
         .json({ message: "Không tìm thấy người dùng.", status: "failed" });
     }
 
     // Xóa password khỏi response để không gửi về client
-    user.password = undefined;
+    userProfile.password = undefined;
 
     // Trả về thông tin user
     res.status(201).json({
       status: "success",
-      user,
+      user: userProfile,
     });
   } catch (error) {
     // Xử lý lỗi nếu có bất kỳ exception nào xảy ra
@@ -46,7 +46,7 @@ export const getUser = async (req, res) => {
  * Route: PUT /api/user/change-password
  * Yêu cầu: Phải có JWT token trong header (protected route)
  */
-export const changePassword = async (req, res) => {
+export const updateUserPassword = async (req, res) => {
   try {
     // Lấy userId từ JWT token đã được xác thực bởi middleware
     const { userId } = req.user;
@@ -55,15 +55,15 @@ export const changePassword = async (req, res) => {
     const { currentPassword, newPassword, confirmPassword } = req.body;
 
     // Tìm user trong database theo ID
-    const userExist = await pool.query({
+    const userExists = await pool.query({
       text: `SELECT * FROM tbluser WHERE id = $1`,
       values: [userId],
     });
 
-    const user = userExist.rows[0];
+    const userProfile = userExists.rows[0];
 
     // Nếu không tìm thấy user, trả về lỗi 404
-    if (!user) {
+    if (!userProfile) {
       return res
         .status(404)
         .json({ message: "Không tìm thấy người dùng.", status: "failed" });
@@ -78,10 +78,13 @@ export const changePassword = async (req, res) => {
     }
 
     // So sánh mật khẩu hiện tại với mật khẩu trong database
-    const isMatch = await comparePassword(currentPassword, user?.password);
+    const isPasswordMatch = await comparePassword(
+      currentPassword,
+      userProfile?.password,
+    );
 
     // Nếu mật khẩu hiện tại không khớp, trả về lỗi 401
-    if (!isMatch) {
+    if (!isPasswordMatch) {
       return res
         .status(401)
         .json({ message: "Mật khẩu hiện tại không đúng.", status: "failed" });
@@ -121,34 +124,34 @@ export const updateUser = async (req, res) => {
     const { firstname, lastname, country, currency, contact } = req.body;
 
     // Kiểm tra user có tồn tại trong database không
-    const userExist = await pool.query({
+    const userExists = await pool.query({
       text: `SELECT * FROM tbluser WHERE id = $1`,
       values: [userId],
     });
 
-    const user = userExist.rows[0];
+    const userProfile = userExists.rows[0];
 
     // Nếu không tìm thấy user, trả về lỗi 404
-    if (!user) {
+    if (!userProfile) {
       return res
         .status(404)
         .json({ message: "Không tìm thấy người dùng.", status: "failed" });
     }
 
     // Cập nhật thông tin user và tự động cập nhật updatedAt
-    const updatedUser = await pool.query({
+    const updatedUserResult = await pool.query({
       text: `UPDATE tbluser SET firstname = $1, lastname = $2, country = $3, currency = $4, contact = $5, updatedat = CURRENT_TIMESTAMP WHERE id = $6 RETURNING *`,
       values: [firstname, lastname, country, currency, contact, userId],
     });
 
     // Xóa password khỏi response để không gửi về client
-    updatedUser.rows[0].password = undefined;
+    updatedUserResult.rows[0].password = undefined;
 
     // Trả về response thành công với thông tin user đã cập nhật
     res.status(200).json({
       message: "Cập nhật thông tin người dùng thành công",
       status: "success",
-      user: updatedUser.rows[0],
+      user: updatedUserResult.rows[0],
     });
   } catch (error) {
     // Xử lý lỗi nếu có bất kỳ exception nào xảy ra
